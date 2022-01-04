@@ -1,4 +1,4 @@
-import 'dotenv/config'  
+import 'dotenv/config'
 import express from 'express'
 import morgan from 'morgan'
 import cors from 'cors'
@@ -59,21 +59,14 @@ app.get('/api/persons', (request, response) => {
   })
 
   app.post('/api/persons', (request, response) => {
-    const person = request.body
-    var newID = Math.floor(Math.random() * 9999999);
-    while(persons.find(person => person.id === newID)) {
-        newID = Math.floor(Math.random() * max);
-    }
-    if (!person.name || !person.number) {
-        response.status(406).json({error: `Person must contain BOTH a name and a number`})
-        return
-    }
-    if (persons.find(x => x.name.toLowerCase() === person.name.toLowerCase())) {
-        response.status(406).json({error: `${person.name} already exists in the phonebook!`})
-        return
-    } 
-    persons = persons.concat({...person,id:newID})
-    response.json({...person, id:newID})
+    const person = new Person({
+      name: request.body.name,
+      number: request.body.number
+    })
+    person.save().then(result => {
+      console.log('added', `${result.name} number ${result.number}`, 'to phonebook')
+      response.json(result)
+  })
   })
 
 const PORT = process.env.PORT || 3001
