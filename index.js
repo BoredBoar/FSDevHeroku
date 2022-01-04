@@ -1,31 +1,11 @@
+import 'dotenv/config'
 import express from 'express'
 import morgan from 'morgan'
 import cors from 'cors'
+import Person from './models/person.js'
 const app = express()
-const max = 9999999
 
-let persons = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": 2,
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
+console.log(Person)
 
 morgan.token('entry', (req) => {
   if(Object.keys(req.body).length > 0){
@@ -45,7 +25,10 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :e
 // })
 
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Person.find({})
+      .then(persons => {
+        response.json(persons)
+      })
   })
 
   app.get('/info', (request, response) => {
@@ -77,7 +60,7 @@ app.get('/api/persons', (request, response) => {
 
   app.post('/api/persons', (request, response) => {
     const person = request.body
-    var newID = Math.floor(Math.random() * max);
+    var newID = Math.floor(Math.random() * 9999999);
     while(persons.find(person => person.id === newID)) {
         newID = Math.floor(Math.random() * max);
     }
