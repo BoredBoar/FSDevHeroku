@@ -20,10 +20,6 @@ app.use(express.json())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :entry'))
 
 
-// app.get('/', (request, response) => {
-//   response.send('<h1>Hello World!</h1>')
-// })
-
 app.get('/api/persons', (request, response, next) => {
     Person.find({})
       .then(persons => {
@@ -46,13 +42,6 @@ app.get('/api/persons', (request, response, next) => {
             response.status(404).end()
         }
       }).catch(err => next(err))
-    // const id = Number(request.params.id)
-    // const person = persons.find(person => person.id === id)
-    // if(person){response.json(person)}
-    // else{
-    //     response.statusMessage = `Person with ID of ${request.params.id} was not found`
-    //     response.status(404).end()
-    //     }
   })
 
   app.delete('/api/persons/:id', (request, response, next) => {
@@ -61,17 +50,20 @@ app.get('/api/persons', (request, response, next) => {
         if(result) {
           response.status(204).end()
         } else {
-          response.statusMessage = `Person with ID of ${request.params.id} was not found`
-          response.status(404).end()
+          response.status(404).json({error: `Person with ID of ${request.params.id} was not found`})
         }
       }).catch(error => next(error))
   })
 
   app.put('/api/persons/:id', (request, response, next) => {
-    Person.findByIdAndUpdate(request.params.id, {number: request.body.number}, {returnDocument:'after'})
+    Person.findByIdAndUpdate(request.params.id, {number: request.body.number}, {returnDocument:'after',runValidators: true})
       .then(result => {
-        console.log(`Updated ${result.name} to number ${result.number}`)
-        response.json(result)
+        if(result) {
+          console.log(`Updated ${result.name} to number ${result.number}`)
+          response.json(result)
+        } else {
+          response.status(404).json({error: `Person with ID of ${request.params.id} was not found`})
+        }
       }).catch(error => next(error))
   })
 
@@ -99,7 +91,9 @@ app.get('/api/persons', (request, response, next) => {
 
     if (error.name === 'CastError') {
       return response.status(400).send({ error: 'malformatted id' })
-    } 
+    } else if (error.name === 'ValidationError') {
+      return response.status(400).json({ error: error.message })
+    }
 
     next(error)
   } 
