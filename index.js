@@ -68,7 +68,7 @@ app.get('/api/persons', (request, response, next) => {
   })
 
   app.put('/api/persons/:id', (request, response, next) => {
-    Person.findByIdAndUpdate(request.params.id, {number: request.body.number})
+    Person.findByIdAndUpdate(request.params.id, {number: request.body.number}, {returnDocument:'after'})
       .then(result => {
         console.log(`Updated ${result.name} to number ${result.number}`)
         response.json(result)
